@@ -46,25 +46,13 @@ class Record:
     def remove_phone(self, phone):
         self.phones = [p for p in self.phones if p.value != phone]
 
-
-
-
-
     def edit_phone(self, phone, new_phone):
-        if Phone.validate_phone(new_phone):
-            found = False
-
-            for i, existing_phone in enumerate(self.phones):
-
-                if existing_phone == phone:
-                    self.phones[i] = Phone(new_phone)
-                    found = True
-                    break
-
-            if not found:
-                raise ValueError("There isn't a phone like the one you provided")
+        for p in self.phones:
+            if p.value == phone:
+                p.value = new_phone
+                break
         else:
-            raise ValueError("Invalid phone number format")
+            raise ValueError("Phone number not found")
 
     def find_phone(self, phone):
         for p in self.phones:
@@ -72,19 +60,7 @@ class Record:
                 return p
 
 
-class AddressBook:
-    def __init__(self):
-        self.data = {}
 
-    def add_record(self, record):
-        self.data[record.name.value] = record
-
-    def find(self, name):
-        return self.data.get(name)
-
-    def delete(self, name):
-        if name in self.data:
-            del self.data[name]
 
 
 def handle_command(address_book, command):
