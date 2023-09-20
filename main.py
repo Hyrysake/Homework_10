@@ -44,15 +44,10 @@ class Birthday(Field):
             return None
         birth_date = datetime.strptime(self.value, "%d.%m.%y")
         current_date = datetime.now()
-
-        # Calculate the difference between the current date and the birthday date
         difference = birth_date - current_date
-
-        # Calculate the number of days until the birthday (remaining)
         days_until_birthday = difference.days
 
         if days_until_birthday < 0:
-            # If the birthday has already passed in the current year, calculate for the next year
             next_birthday_year = current_date.year + 1
             next_birthday_date = datetime(next_birthday_year, birth_date.month, birth_date.day)
             difference = next_birthday_date - current_date
