@@ -1,5 +1,5 @@
 from datetime import datetime
-
+from collections import UserDict
 class Field:
     def __init__(self, value=None):
         self.value = value
@@ -85,9 +85,9 @@ class Record:
                 return p
 
 
-class AddressBook:
+class AddressBook(UserDict):
     def __init__(self):
-        self.data = {}
+        super().__init__()
         self.page_size = 10
 
     def add_record(self, record):
