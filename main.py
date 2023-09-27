@@ -1,5 +1,6 @@
 from datetime import datetime
 from collections import UserDict
+import pickle
 class Field:
     def __init__(self, value=None):
         self.value = value
@@ -86,9 +87,10 @@ class Record:
 
 
 class AddressBook(UserDict):
-    def __init__(self):
+    def __init__(self, filename):
         super().__init__()
         self.page_size = 10
+        self.filename = filename
 
     def add_record(self, record):
         self.data[record.name.get_value()] = record
@@ -104,6 +106,37 @@ class AddressBook(UserDict):
         records = list(self.data.values())
         for i in range(0, len(records), self.page_size):
             yield records[i:i + self.page_size]
+
+    def save_to_file(self):
+        try:
+            with open(self.filename, 'wb') as file:
+                pickle.dump(self.data, file)
+            print(f'Address book saved to {self.filename}')
+        except Exception as e:
+            print(f'Error saving to {self.filename}: {str(e)}')
+
+    def read_from_file(self):
+        try:
+            with open(self.filename, 'rb') as file:
+                data = pickle.load(file)
+                self.data = data
+            print(f'Address book loaded from {self.filename}')
+        except FileNotFoundError:
+            print(f'File {self.filename} not found. Creating a new address book.')
+        except Exception as e:
+            print(f'Error reading from {self.filename}: {str(e)}')
+
+    def search(self, query):
+        query = query.lower()
+        results = []
+        for record in self.data.values():
+            if query in record.name.get_value().lower():
+                results.append(record)
+            for phone in record.phones:
+                if query in phone.get_value():
+                    results.append(record)
+        return results
+
 
 
 def handle_command(address_book, command):
@@ -144,6 +177,19 @@ def handle_command(address_book, command):
         else:
             return f"Contact {name} not found"
 
+
+
+    elif action == "find":
+        if len(args) < 1:
+            return "Invalid format for 'find' command. Please provide a search query."
+        search_query = ' '.join(args)
+        results = address_book.search(search_query)
+        if results:
+            contacts = [f"{record.name.get_value()}: {', '.join([p.get_value() for p in record.phones])}" for record in results]
+            return "\n".join(contacts)
+        else:
+            return f"No contacts found for '{search_query}'"
+
     elif action == "phone":
         if len(args) < 1:
             return "Invalid format for 'phone' command. Please provide a name."
@@ -174,19 +220,22 @@ def handle_command(address_book, command):
 
 
 def main():
+    filename = "address_book.dat"
+    address_book = AddressBook(filename)
+    address_book.read_from_file()
+
     print("Welcome to ContactBot!")
-    address_book = AddressBook()
 
     while True:
         command = input("Enter a command: ").strip()
 
         if command.lower() in ["goodbye", "close", "exit"]:
+            address_book.save_to_file()
             print("Good bye!")
             break
 
         response = handle_command(address_book, command)
         print(response)
-
 
 if __name__ == "__main__":
     main()
